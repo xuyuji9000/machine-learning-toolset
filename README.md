@@ -28,8 +28,9 @@ This repository is for creating the toolset for machine learning colearning
 
     ``` bash
     pip3 install jupyter
-    ssh -L 8000:localhost:8888 root@YOUR_SERVER_IP
-    
+    jupyter notebook --no-browser --port=8888
+    #ssh -L 8000:localhost:8888 root@YOUR_SERVER_IP
+    ssh -f ubuntu@YOUR_SERVER_IP -L 8000:localhost:8888 -N
     ```
 
 
