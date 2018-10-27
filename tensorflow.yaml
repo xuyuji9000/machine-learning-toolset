@@ -1,0 +1,124 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Playground of creating an instance.
+
+Parameters:
+  Project:
+    Default: playground
+    Description: Name of the Project
+    Type: String
+
+  ImageId:
+    Default: ami-0c5199d385b432989
+    Description: AWS server instance id.
+    Type: String
+
+  KeyName:
+    Default: default
+    Description: SSH key name.
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "Namespace"
+        Parameters:
+          - Project
+      -
+        Label:
+          default: "Tech spec"
+        Parameters:
+          - ImageId
+          - KeyName
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsSupport: 'false'
+      EnableDnsHostnames: 'false'
+      # InstanceTenancy: dedicated
+      Tags:
+        - Key: Name
+          Value: !Sub ${Project}-kx
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      MapPublicIpOnLaunch: true
+      VpcId:
+        Ref: VPC
+      CidrBlock: !Select [ 3, !Cidr [ !GetAtt VPC.CidrBlock, 4, 14 ]]
+      Tags:
+        - Key: Name
+          Value: !Sub ${Project}-kx
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  GatewayAttachement:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref 'VPC'
+      InternetGatewayId: !Ref 'InternetGateway'
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref 'VPC'
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachement
+    Properties:
+      RouteTableId: !Ref 'PublicRouteTable'
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref 'InternetGateway'
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: "t2.medium"
+      ImageId: !Ref ImageId
+      KeyName: !Ref KeyName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet:
+            - !Ref SecurityGroup
+          SubnetId: !Ref PublicSubnet
+      # UserData:
+      #   Fn::Base64: !Sub |
+      #       #!/bin/bash -ex
+      #       ps
+
+      Tags:
+        -
+          Key: Name
+          Value: !Sub ${Project}-kx
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub ${Project}-kx-sg
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${Project}-kx-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          CidrIp: "0.0.0.0/0"
+          FromPort: '22'
+          ToPort: '22'
+        - IpProtocol: tcp
+          CidrIp: "0.0.0.0/0"
+          FromPort: '8000'
+          ToPort: '8000'
