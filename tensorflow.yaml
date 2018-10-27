@@ -13,9 +13,17 @@ Parameters:
     Type: String
 
   KeyName:
-    Default: default
     Description: SSH key name.
     Type: String
+
+  VPCID:
+    Description: VPC ID.
+    Type: String
+
+  PublicSubnet:
+    Description: Public subnet id.
+    Type: String
+
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -33,56 +41,6 @@ Metadata:
           - KeyName
 
 Resources:
-  VPC:
-    Type: AWS::EC2::VPC
-    Properties:
-      CidrBlock: "10.0.0.0/16"
-      EnableDnsSupport: 'false'
-      EnableDnsHostnames: 'false'
-      # InstanceTenancy: dedicated
-      Tags:
-        - Key: Name
-          Value: !Sub ${Project}-kx
-
-  PublicSubnet:
-    Type: AWS::EC2::Subnet
-    Properties:
-      MapPublicIpOnLaunch: true
-      VpcId:
-        Ref: VPC
-      CidrBlock: !Select [ 3, !Cidr [ !GetAtt VPC.CidrBlock, 4, 14 ]]
-      Tags:
-        - Key: Name
-          Value: !Sub ${Project}-kx
-
-  InternetGateway:
-    Type: AWS::EC2::InternetGateway
-
-  GatewayAttachement:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId: !Ref 'VPC'
-      InternetGatewayId: !Ref 'InternetGateway'
-
-  PublicRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref 'VPC'
-
-  PublicRoute:
-    Type: AWS::EC2::Route
-    DependsOn: GatewayAttachement
-    Properties:
-      RouteTableId: !Ref 'PublicRouteTable'
-      DestinationCidrBlock: '0.0.0.0/0'
-      GatewayId: !Ref 'InternetGateway'
-
-  PublicSubnetRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PublicSubnet
-      RouteTableId: !Ref PublicRouteTable
-
   Ec2Instance:
     Type: AWS::EC2::Instance
     Properties:
@@ -95,10 +53,27 @@ Resources:
           GroupSet:
             - !Ref SecurityGroup
           SubnetId: !Ref PublicSubnet
-      # UserData:
-      #   Fn::Base64: !Sub |
-      #       #!/bin/bash -ex
-      #       ps
+      UserData:
+        Fn::Base64: !Sub |
+            #!/bin/bash -ex
+            apt update
+            apt install -y python3-dev python3-pip
+            pip3 install -U virtualenv  # system-wide install
+
+            python3 --version
+            pip3 --version
+            virtualenv --version
+
+            virtualenv --system-site-packages -p python3 ./venv
+            source ./venv/bin/activate  # sh, bash, ksh, or zsh
+
+            pip3 install --upgrade pip
+
+            pip3 install --upgrade tensorflow
+
+            python -c "import tensorflow as tf; print(tf.__version__)"
+
+            pip3 install --upgrade jupyter
 
       Tags:
         -
@@ -109,7 +84,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: !Sub ${Project}-kx-sg
-      VpcId: !Ref VPC
+      VpcId: !Ref VPCID
       Tags:
         - Key: Name
           Value: !Sub ${Project}-kx-sg
