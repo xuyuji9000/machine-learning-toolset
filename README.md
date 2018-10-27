@@ -29,12 +29,12 @@ This repository is for creating the toolset for machine learning colearning
 
     ``` bash
     pip3 install --upgrade jupyter
-    jupyter notebook --no-browser --port=8888 &
     ```
 
 - Access remote Jupyter
 
     ``` bash
+    activate ./venv/bin/activate
     ssh -f ubuntu@YOUR_SERVER_IP -L 8000:localhost:8888 -N
     ```
 
