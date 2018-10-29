@@ -23,3 +23,5 @@ This repository is for creating the toolset for machine learning colearning
 1. [Install TensorFlow with pip](https://www.tensorflow.org/install/pip)
 
 2. [How to Install, Run, and Connect to Jupyter Notebook on a Remote Server](https://www.digitalocean.com/community/tutorials/how-to-install-run-connect-to-jupyter-notebook-on-remote-server)
+
+3. [how-to-reliably-keep-an-ssh-tunnel-open](https://superuser.com/questions/37738/how-to-reliably-keep-an-ssh-tunnel-open)
