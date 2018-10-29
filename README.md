@@ -8,7 +8,7 @@ This repository is for creating the toolset for machine learning colearning
 
     ``` bash
     ssh -f ubuntu@YOUR_SERVER_IP
-    activate ./venv/bin/activate
+    source ./venv/bin/activate
     jupyter notebook --no-browser --port=8888 &
     ```
 
