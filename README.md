@@ -7,7 +7,7 @@ This repository is for creating the toolset for machine learning colearning
 - Start Jupyter, get token
 
     ``` bash
-    ssh -i YOUR_SSH_KEY -f ubuntu@YOUR_SERVER_IP
+    ssh -i YOUR_SSH_KEY_LOCATION -f ubuntu@YOUR_SERVER_IP
     source ./venv/bin/activate
     jupyter notebook --no-browser --port=8888 &
     ```
