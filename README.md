@@ -15,7 +15,7 @@ This repository is for creating the toolset for machine learning colearning
 - Setup remote to local jupyter connection
 
     ``` bash
-    ssh -i YOUR_SSH_KEY_LOCATION -f ubuntu@YOUR_SERVER_IP -L 8000:localhost:8888 -N
+    autossh -i YOUR_SSH_KEY_LOCATION -M 20000  -L 8000:localhost:8888 -f ubuntu@YOUR_SERVER_IP -N
     ```
 
 # Reference
